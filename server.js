@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // --- simple JSON “DB” ---
-const DB_FILE = path.join(__dirname, "db.json");
+const DB_FILE = path.join(__dirname, "/mnt/db/db.json");
 let db = {};
 try {
   db = JSON.parse(fs.readFileSync(DB_FILE));
