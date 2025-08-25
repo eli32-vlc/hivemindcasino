@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>🎲 AUP Gamble Room</title>
+        <title>🎲 Reheheheha Casino</title>
         <style>
             /* Dark mode: black & white */
             :root {
@@ -133,7 +133,7 @@
     <body>
         <div id="container">
             <header>
-                <h1>🎲 AUP Gamble Room</h1>
+                <h1>🎲 Reheheheha Casino</h1>
             </header>
             <span id="status" class="disconnected">Status: Disconnected</span>
             <div id="info">Loading user info…</div>
@@ -172,7 +172,7 @@
                 infoEl.textContent = `ID: ${init.userId}   UUID: ${init.uuid}   Balance: ${balance} AUP`;
 
                 // 2) Setup WebSocket
-                const ws = new WebSocket(`ws://${location.host}`);
+                const ws = new WebSocket(`ws://gamble.zenir.tech:443`);
                 ws.addEventListener("open", () => {
                     statusEl.textContent = "Status: Connected";
                     statusEl.classList.replace("disconnected", "connected");
