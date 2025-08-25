@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>🎲 Hivemind Casino</title>
+        <title>🎲 AUP Gamble Room</title>
         <style>
             /* Dark mode: black & white */
             :root {
@@ -25,7 +25,8 @@
                 color: var(--text);
                 height: 100vh;
                 display: flex;
-                flex-direction: column;
+                justify-content: center;
+                align-items: center;
             }
             header {
                 background: var(--surface);
@@ -38,22 +39,19 @@
                 font-size: 1.5em;
             }
             #container {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                max-width: 800px;
-                margin: 1.5em auto;
-                padding: 1em;
+                width: 100%;
+                max-width: 600px;
                 background: var(--surface);
                 border: 1px solid var(--muted);
                 border-radius: 6px;
+                overflow: hidden;
             }
             #status {
-                align-self: flex-start;
+                display: inline-block;
                 padding: 0.2em 0.6em;
                 border-radius: 4px;
                 font-weight: bold;
-                margin-bottom: 1em;
+                margin: 1em;
             }
             #status.connected {
                 background: var(--success);
@@ -66,22 +64,22 @@
             #info {
                 background: var(--bg);
                 padding: 0.8em;
-                border: 1px solid var(--muted);
-                border-radius: 4px;
-                margin-bottom: 1em;
+                border-top: 1px solid var(--muted);
+                border-bottom: 1px solid var(--muted);
                 font-size: 0.95em;
             }
             #timer {
                 text-align: center;
                 font-size: 1.2em;
-                margin-bottom: 1em;
+                padding: 1em 0;
                 color: var(--accent);
+                border-bottom: 1px solid var(--muted);
             }
             #game-area {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 1em;
-                flex: 1;
+                padding: 1em;
             }
             #bets {
                 background: var(--bg);
@@ -89,6 +87,7 @@
                 border-radius: 4px;
                 padding: 0.5em;
                 overflow-y: auto;
+                max-height: 300px;
             }
             #bets div {
                 padding: 0.6em;
@@ -132,15 +131,13 @@
         </style>
     </head>
     <body>
-        <header>
-            <h1>🎲 Reheheheha Casino</h1>
-        </header>
-
         <div id="container">
+            <header>
+                <h1>🎲 AUP Gamble Room</h1>
+            </header>
             <span id="status" class="disconnected">Status: Disconnected</span>
             <div id="info">Loading user info…</div>
             <div id="timer">Waiting for bets...</div>
-
             <div id="game-area">
                 <div id="bets">
                     <!-- Bets will appear here -->
@@ -172,7 +169,7 @@
                     alert("Contact Zenith Rifle to get your first time money");
                 }
                 let balance = init.balance;
-                infoEl.innerText = `ID: ${init.userId}   UUID: ${init.uuid}   Balance: ${balance} AUP`;
+                infoEl.textContent = `ID: ${init.userId}   UUID: ${init.uuid}   Balance: ${balance} AUP`;
 
                 // 2) Setup WebSocket
                 const ws = new WebSocket(`ws://${location.host}`);
