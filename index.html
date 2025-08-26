@@ -172,7 +172,7 @@
                 infoEl.textContent = `ID: ${init.userId}   UUID: ${init.uuid}   Balance: ${balance} AUP`;
 
                 // 2) Setup WebSocket
-                const ws = new WebSocket(`wss://${location.host}`);
+                const ws = new WebSocket(`wss://gamble.zenir.tech`);
                 ws.addEventListener("open", () => {
                     statusEl.textContent = "Status: Connected";
                     statusEl.classList.replace("disconnected", "connected");
