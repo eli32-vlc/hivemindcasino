@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>🎲 AUP Gamble Room</title>
+  <style>
+    /* Dark mode: black & white */
+    :root {
+      --bg: #121212;
+      --surface: #1e1e1e;
+      --text: #ffffff;
+      --accent: #ffffff;
+      --muted: #888888;
+      --error: #cf6679;
+      --success: #03dac6;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    header {
+      background: var(--surface);
+      padding: 1em;
+      text-align: center;
+      border-bottom: 1px solid var(--muted);
+    }
+    header h1 {
+      color: var(--accent);
+      font-size: 1.5em;
+    }
+    #container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--surface);
+      border: 1px solid var(--muted);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    #status {
+      display: inline-block;
+      padding: 0.2em 0.6em;
+      border-radius: 4px;
+      font-weight: bold;
+      margin: 1em;
+    }
+    #status.connected { background: var(--success); color: var(--bg); }
+    #status.disconnected { background: var(--error); color: var(--bg); }
+    #info {
+      background: var(--bg);
+      padding: 0.8em;
+      border-top: 1px solid var(--muted);
+      border-bottom: 1px solid var(--muted);
+      font-size: 0.95em;
+    }
+    #timer {
+      text-align: center;
+      font-size: 1.2em;
+      padding: 1em 0;
+      color: var(--accent);
+      border-bottom: 1px solid var(--muted);
+    }
+    #game-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1em;
+      padding: 1em;
+    }
+    #bets {
+      background: var(--bg);
+      border: 1px solid var(--muted);
+      border-radius: 4px;
+      padding: 0.5em;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+    #bets div {
+      padding: 0.6em;
+      border-bottom: 1px solid var(--muted);
+      font-size: 0.9em;
+    }
+    #bets div:last-child {
+      border-bottom: none;
+    }
+    #controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+    }
+    #controls input,
+    #controls button {
+      padding: 0.6em;
+      font-size: 1em;
+      border: 1px solid var(--muted);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    #controls input::placeholder {
+      color: var(--muted);
+    }
+    #controls button {
+      cursor: pointer;
+      transition: background 0.2s;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+    }
+    #controls button:disabled {
+      background: var(--muted);
+      cursor: not-allowed;
+    }
+    #controls button:hover:not(:disabled) {
+      background: var(--success);
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <header>
+      <h1>🎲 AUP Gamble Room</h1>
+    </header>
+    <span id="status" class="disconnected">Status: Disconnected</span>
+    <div id="info">Loading user info…</div>
+    <div id="timer">Waiting for bets...</div>
+    <div id="game-area">
+      <div id="bets">
+        <!-- Bets will appear here -->
+      </div>
+      <div id="controls">
+        <input type="number" id="betAmt" placeholder="Enter your bet" min="1"/>
+        <button id="betBtn" disabled>Place Bet</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (async () => {
+      const statusEl = document.getElementById('status');
+      const infoEl   = document.getElementById('info');
+      const timerEl  = document.getElementById('timer');
+      const betsEl   = document.getElementById('bets');
+      const betAmtEl = document.getElementById('betAmt');
+      const betBtn   = document.getElementById('betBtn');
+
+      // 1) Initialize user
+      const init = await fetch('/init').then(r => r.json());
+      if (init.firstTime) {
+        alert('Contact Zenith Rifle to get your first time money');
+      }
+      let balance = init.balance;
+      infoEl.textContent = `ID: ${init.userId}   UUID: ${init.uuid}   Balance: ${balance} AUP`;
+
+      // 2) Setup WebSocket
+      const ws = new WebSocket(`ws://${location.host}`);
+      ws.addEventListener('open', () => {
+        statusEl.textContent = 'Status: Connected';
+        statusEl.classList.replace('disconnected','connected');
+        ws.send(JSON.stringify({ type: 'join', userId: init.userId }));
+        betBtn.disabled = false;
+      });
+      ws.addEventListener('close', () => {
+        statusEl.textContent = 'Status: Disconnected';
+        statusEl.classList.replace('connected','disconnected');
+        betBtn.disabled = true;
+      });
+      ws.addEventListener('error', () => {
+        statusEl.textContent = 'Status: Error';
+        statusEl.classList.replace('connected','disconnected');
+        betBtn.disabled = true;
+      });
+
+      ws.addEventListener('message', e => {
+        const msg = JSON.parse(e.data);
+        switch (msg.type) {
+          case 'timer':
+            timerEl.textContent = `Time left: ${msg.timeLeft}s`;
+            break;
+          case 'new-bet':
+            const div = document.createElement('div');
+            div.textContent = `${msg.userId} bet ${msg.amount} AUP`;
+            betsEl.append(div);
+            break;
+          case 'round-result':
+            alert(`🎉 ${msg.winner} wins ${msg.total} AUP!`);
+            betsEl.innerHTML = '';
+            timerEl.textContent = 'Waiting for bets...';
+            break;
+          case 'balance-update':
+            balance = msg.balance;
+            infoEl.textContent = `ID: ${init.userId}   UUID: ${init.uuid}   Balance: ${balance} AUP`;
+            break;
+          case 'error':
+            alert(`Error: ${msg.message}`);
+            break;
+        }
+      });
+
+      // 3) Place bet handler
+      betBtn.addEventListener('click', () => {
+        const amt = Number(betAmtEl.value);
+        if (!amt || amt <= 0) {
+          return alert('Enter a valid bet amount');
+        }
+        ws.send(JSON.stringify({ type: 'place-bet', amount: amt }));
+        betAmtEl.value = '';
+      });
+    })();
+  </script>
+</body>
+</html>

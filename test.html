@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>WebSocket Test</title>
+    </head>
+    <body>
+        <h1>WebSocket Tester</h1>
+        <div>
+            <label
+                >URL:
+                <input id="url" value="wss://gamble.zenir.tech/" size="40"
+            /></label>
+            <button id="connect">Connect</button>
+        </div>
+        <pre
+            id="log"
+            style="
+                background: #f0f0f0;
+                padding: 1em;
+                height: 300px;
+                overflow: auto;
+            "
+        ></pre>
+        <input
+            id="msg"
+            placeholder='{"type":"join","userId":"..."}'
+            size="50"
+        />
+        <button id="send">Send</button>
+
+        <script>
+            let ws;
+            const log = (m) => {
+                document.getElementById("log").textContent += m + "\n";
+            };
+
+            document.getElementById("connect").onclick = () => {
+                const url = document.getElementById("url").value;
+                ws = new WebSocket(url);
+                ws.onopen = () => log("▶ Connected");
+                ws.onmessage = (e) => log("◀ " + e.data);
+                ws.onclose = (e) => log(`✖ Closed code=${e.code}`);
+                ws.onerror = (e) => log("⚠ Error " + e.message);
+            };
+
+            document.getElementById("send").onclick = () => {
+                const txt = document.getElementById("msg").value;
+                log("→ " + txt);
+                ws.send(txt);
+            };
+        </script>
+    </body>
+</html>
